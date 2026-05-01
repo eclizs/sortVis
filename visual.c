@@ -24,10 +24,7 @@ int findMax(int *array, int size)
     int max = array[0];
     for (int i = 1; i < size; i++)
     {
-        if (array[i] > max)
-        {
-            max = array[i];
-        }
+        if (array[i] > max) max = array[i];
     }
     return max;
 }
@@ -101,7 +98,6 @@ void mergeSort_rec(int *array, int left, int right, int size, int intervalInSeco
             VISUALIZE(array, size, intervalInSeconds);
         }
         
-        
         free(temp);
     }
 }
@@ -135,7 +131,6 @@ void quickSort_rec(int *array, int low, int high, int size, int intervalInSecond
     if (low < high)
     {
         int pivot = partition(array, low, high, size, intervalInSeconds);
-        VISUALIZE(array, size, intervalInSeconds);
         quickSort_rec(array, low, pivot - 1, size, intervalInSeconds);
         quickSort_rec(array, pivot + 1, high, size, intervalInSeconds);
     }
