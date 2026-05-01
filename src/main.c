@@ -164,7 +164,8 @@ void randomizeArray(int *array, int arraysize, int max)
 
 void visualizeAlgorithm(SortingFunction sf, int *array, int size, struct winsize w)
 {
-    randomizeArray(array, size, w.ws_row - 1);
+    randomizeArray(array, size, w.ws_row - 2);
+    system("clear");
     printf("%s Visualization...\nPress enter to start...", sf.name); getchar();
     sf.function(array, size, 0);
     printf("%s Visualization Completed.\nPress enter to continue...", sf.name); getchar();
