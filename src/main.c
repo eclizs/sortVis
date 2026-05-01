@@ -3,54 +3,12 @@
 #include<unistd.h>
 #include<time.h>
 #include<sys/ioctl.h>
-
-#define GNU_SOURCE
-
-#define VISUALIZE(arr,size, intervalInSeconds) \
-    do { \
-        if(intervalInSeconds > 0) \
-        { \
-            system("clear"); \
-            visualizeArray(arr, size); \
-            printf("\n"); \
-            usleep(intervalInSeconds * 1000000); \
-        } \
-    } while(0)
+#include "visualize.h"
 
 typedef struct SortingFunction {
     void (*function)(int *, int, int);
     const char *name;
 } SortingFunction;
-
-int findMax(int *array, int size)
-{
-    int max = array[0];
-    for (int i = 1; i < size; i++)
-    {
-        if (array[i] > max) max = array[i];
-    }
-    return max;
-}
-
-void visualizeArray(int *array, int size)
-{
-    int max = findMax(array, size);
-    for(int i = max; i > 0; i--)
-    {
-        for (int j = 0; j < size; j++)
-        {
-            if (array[j] >= i)
-            {
-                printf("* ");
-            }
-            else
-            {
-                printf("  ");
-            }
-        }
-        printf("\n");
-    }
-}
 
 void swap(int *a, int *b)
 {
@@ -203,16 +161,12 @@ void randomizeArray(int *array, int arraysize, int max)
     }
 }
 
-void benchmarkSortingAlgorithm(SortingFunction sf, int *array, int size, struct winsize w)
+void visualizeAlgorithm(SortingFunction sf, int *array, int size, struct winsize w)
 {
     randomizeArray(array, size, w.ws_row - 1);
-    printf("Benchmarking %s...\nPress enter to start...", sf.name); getchar();
-    struct timespec start, end;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+    printf("%s Visualization...\nPress enter to start...", sf.name); getchar();
     sf.function(array, size, 0);
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
-    double time_taken = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-    printf("Time taken by %s: %f seconds\nPress enter to continue...", sf.name, time_taken); getchar();
+    printf("%s Visualization Completed.\nPress enter to continue...", sf.name); getchar();
 }
 
 int main()
@@ -235,7 +189,7 @@ int main()
     int numSortingFunctions = sizeof(sortingFunctions) / sizeof(sortingFunctions[0]);
     for (int i = 0; i < numSortingFunctions; i++)
     {
-        benchmarkSortingAlgorithm(sortingFunctions[i], arr, arraysize, w);
+        visualizeAlgorithm(sortingFunctions[i], arr, arraysize, w);
     }
 
     return 0;
