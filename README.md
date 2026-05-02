@@ -8,9 +8,11 @@ Currently bubble sort, insertion sort, selection sort, merge sort, and quick sor
 TODO:
 
 flags to add:
-- [ ] --sort=[sortingAlgorithm name]
+- [x] --sort=[sortingAlgorithm name]
 - [x] --help/-h
-- [ ] --benchmark
+- [x] --benchmark
 - [x] --width=N
 - [x] --height=N
-- [ ] --interval/-i
+- [x] --interval/-i
+
+done for now(?)

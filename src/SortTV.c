@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<ctype.h>
 #include<unistd.h>
 #include<time.h>
 #include<sys/ioctl.h>
@@ -14,6 +15,7 @@
 
 #define GNU_SOURCE
 #define DEFAULT_INTERVAL 0.01
+#define STATUS_LINES 5
 
 typedef struct SortingFunction {
     void (*function)(int *, int, double);
@@ -38,28 +40,46 @@ void randomizeArray(int *array, int arraysize, int max)
     }
 }
 
-void visualizeAlgorithm(SortingFunction sf, int *array, int size, int max, double intervalInSeconds)
+void visualizeAlgorithm(SortingFunction sf, int *array, int size, double intervalInSeconds)
 {
-    randomizeArray(array, size, max);
+    int *tempArray = malloc(size * sizeof(int));
+    memcpy(tempArray, array, size * sizeof(int));
     system("clear");
-    printf("%s Visualization...\nPress enter to start...", sf.name); getchar();
-    sf.function(array, size, intervalInSeconds);
-    printf("%s Visualization Completed.\nPress enter to continue...", sf.name); getchar();
+    VISUALIZE(tempArray, size, 0.001);
+    printf("%s Sort Visualization...\nPress enter to start...", sf.name); getchar();
+    sf.function(tempArray, size, intervalInSeconds);
+    printf("%s Sort Visualization Completed.\nPress enter to continue...", sf.name); getchar();
+    free(tempArray);
 }
 
-void benchmarkalgorithm(SortingFunction sf, int *array, int size, int max)
+void benchmarkalgorithm(SortingFunction sf, int *array, int size)
 {
     struct timespec start, end;
-    randomizeArray(array, size, max);
-    
+    int *tempArray = malloc(size * sizeof(int));
+    memcpy(tempArray, array, size * sizeof(int));
+
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-    sf.function(array, size, 0); // No visualization for benchmark
+    sf.function(tempArray, size, 0); // No visualization for benchmark
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
     double timeTaken = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     printf("%s Sort Benchmark: %.6f seconds\n", sf.name, timeTaken);
+    free(tempArray);
 }
 
-void parseArguments(int argc, char *argv[], char **sortName, int *benchmark, int *width, int *height, double *intervalInSeconds)
+
+void printHelp(char *programName)
+{
+    printf("Usage: %s [OPTIONS]\n", programName);
+    printf("Options:\n");
+    printf("  -s, --sort [SORT_NAME]   Specify sorting algorithm (bubble, selection, insertion, merge, quick)\n");
+    printf("  -b, --benchmark=[VALUE]  Run in benchmark mode (no visualization; [VALUE] is the array size; default is 10000)\n");
+    printf("  -w, --width=[WIDTH]      Set visualization width (default: terminal width)\n");
+    printf("  -e, --height=[HEIGHT]    Set visualization height (default: terminal height)\n");
+    printf("  -i, --interval=[SECONDS] Set interval between steps in seconds (default is 0.01; gets ignored if in benchmark mode)\n");
+    printf("  -h, --help               Display this help message\n");
+}
+
+void parseArguments(int argc, char *argv[], char **sortName, int *benchmark, int *benchmarkSize, int *width, int *height, double *intervalInSeconds)
 {
     int opt;
     while((opt = getopt_long(argc, argv, "s:b::w:e:i:h", long_options, NULL)) != -1)
@@ -71,13 +91,37 @@ void parseArguments(int argc, char *argv[], char **sortName, int *benchmark, int
                 break;
             case 'b':
                 *benchmark = 1;
-                *width = (optarg != NULL) ? atoi(optarg) : 10000;
+                if(optarg != NULL)
+                {
+                    const char *val = (optarg[0] == '=') ? optarg + 1 : optarg;
+                    *benchmarkSize = atoi(val);
+                }
+                else
+                {
+                    *benchmarkSize = 10000;
+                }
                 break;
             case 'w':
-                *width = atoi(optarg);
+                if(optarg != NULL)
+                {
+                    const char *val = (optarg[0] == '=') ? optarg + 1 : optarg;
+                    *width = atoi(val);
+                }
+                else
+                {
+                    *width = atoi(optarg);
+                }
                 break;
             case 'e':
-                *height = atoi(optarg);
+                if(optarg != NULL)
+                {
+                    const char *val = (optarg[0] == '=') ? optarg + 1 : optarg;
+                    *height = atoi(val);
+                }
+                else
+                {
+                    *height = atoi(optarg);
+                }
                 break;
             case 'i':
                 *intervalInSeconds = atof(optarg);
@@ -87,14 +131,7 @@ void parseArguments(int argc, char *argv[], char **sortName, int *benchmark, int
                 exit(EXIT_FAILURE);
             case 'h':
             default:
-                printf("Usage: %s [OPTIONS]\n", argv[0]);
-                printf("Options:\n");
-                printf("  -s, --sort [SORT_NAME]   Specify sorting algorithm (bubble, selection, insertion, merge, quick)\n");
-                printf("  -b, --benchmark=[VALUE]  Run in benchmark mode (no visualization; <VALUE> is the array size; default is 10000)\n");
-                printf("  -w, --width=[WIDTH]      Set visualization width (default: terminal width)\n");
-                printf("  -e, --height=[HEIGHT]    Set visualization height (default: terminal height)\n");
-                printf("  -i, --interval=[SECONDS] Set interval between steps in seconds (default is 0.01; gets ignored if in benchmark mode)\n");
-                printf("  -h, --help               Display this help message\n");
+                printHelp(argv[0]);
                 exit(EXIT_SUCCESS);
         }
     }
@@ -102,32 +139,29 @@ void parseArguments(int argc, char *argv[], char **sortName, int *benchmark, int
 
 int main(int argc, char *argv[])
 {
-    if(argc == 1)
-    {
-        printf("Usage: %s [OPTIONS]\n", argv[0]);
-        printf("Options:\n");
-        printf("  -s, --sort [SORT_NAME]   Specify sorting algorithm (bubble, selection, insertion, merge, quick)\n");
-        printf("  -b, --benchmark=[VALUE]  Run in benchmark mode (no visualization; <VALUE> is the array size; default is 10000)\n");
-        printf("  -w, --width=[WIDTH]      Set visualization width (default: terminal width)\n");
-        printf("  -e, --height=[HEIGHT]    Set visualization height (default: terminal height)\n");
-        printf("  -i, --interval=[SECONDS] Set interval between steps in seconds (default is 0.01; gets ignored if in benchmark mode)\n");
-        printf("  -h, --help               Display this help message\n");
-        return 1;
-    }
-
     int benchmark = 0;
+    int benchmarkSize = 10000;
     char *sortName = NULL;
     int width = -1, height = -1;
     double intervalInSeconds = DEFAULT_INTERVAL; // Default interval
+    
+    parseArguments(argc, argv, &sortName, &benchmark, &benchmarkSize, &width, &height, &intervalInSeconds);
+    system("clear");
 
-    parseArguments(argc, argv, &sortName, &benchmark, &width, &height, &intervalInSeconds);
+    if(sortName != NULL) sortName[0] = toupper(sortName[0]); // Capitalize first letter for display
 
     if((width < 0 || height < 0) && !benchmark) // Only get terminal size if not in benchmark mode
     {
         struct winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         if(width < 0) width = w.ws_col / 2 - 1;
-        if(height < 0) height = w.ws_row - 2;
+        if(height < 0) height = w.ws_row - STATUS_LINES;
+    }
+
+    if(benchmark)
+    {
+        width = benchmarkSize;
+        height = benchmarkSize;
     }
 
     int arraysize = width;
@@ -137,22 +171,23 @@ int main(int argc, char *argv[])
     int arr[arraysize];
 
     SortingFunction sortingFunctions[] = {
-        {bubbleSort,    "bubble"},
-        {selectionSort, "selection"},
-        {insertionSort, "insertion"},
-        {mergeSort,     "merge"},
-        {quickSort,     "quick"},
+        {bubbleSort,    "Bubble"},
+        {selectionSort, "Selection"},
+        {insertionSort, "Insertion"},
+        {mergeSort,     "Merge"},
+        {quickSort,     "Quick"},
     };
     int numSortingFunctions = sizeof(sortingFunctions) / sizeof(sortingFunctions[0]);
 
+    randomizeArray(arr, arraysize, maxValue);
     if(sortName != NULL)
     {
         for (int i = 0; i < numSortingFunctions; i++)
         {
             if (strcmp(sortName, sortingFunctions[i].name) == 0)
             {
-                if(benchmark) benchmarkalgorithm(sortingFunctions[i], arr, arraysize, maxValue);
-                else visualizeAlgorithm(sortingFunctions[i], arr, arraysize, maxValue, intervalInSeconds);
+                if(benchmark) benchmarkalgorithm(sortingFunctions[i], arr, arraysize);
+                else visualizeAlgorithm(sortingFunctions[i], arr, arraysize, intervalInSeconds);
                 return 0;
             }
         }
@@ -165,14 +200,14 @@ int main(int argc, char *argv[])
         printf("Benchmarking all sorting algorithms for an array of size %d:\n", arraysize);
         for (int i = 0; i < numSortingFunctions; i++)
         {
-            benchmarkalgorithm(sortingFunctions[i], arr, arraysize, maxValue);
+            benchmarkalgorithm(sortingFunctions[i], arr, arraysize);
         }
         return 0;
     }
     
     for (int i = 0; i < numSortingFunctions; i++)
     {
-        visualizeAlgorithm(sortingFunctions[i], arr, arraysize, maxValue, intervalInSeconds);
+        visualizeAlgorithm(sortingFunctions[i], arr, arraysize, intervalInSeconds);
     }
 
     return 0;
