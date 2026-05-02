@@ -15,8 +15,8 @@ void selectionSort(int *array, int size, double intervalInSeconds)
             if (array[j] < array[minIndex])
             {
                 minIndex = j;
+                VISUALIZE(array, size, intervalInSeconds);
             }
-            VISUALIZE(array, size, intervalInSeconds);
         }
         swap(&array[i], &array[minIndex]);
         VISUALIZE(array, size, intervalInSeconds);

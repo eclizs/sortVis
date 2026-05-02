@@ -4,10 +4,9 @@
 #include "mergeSort.h"
 #include "visualize.h"
 
-static void merge(int *array, int left, int mid, int right, int size, double intervalInSeconds)
+static void merge(int *array, int left, int mid, int right, int size, double intervalInSeconds, int *temp)
 {
     int i = left, j = mid + 1, k = 0;
-    int *temp = (int *)malloc((right - left + 1) * sizeof(int));
 
     while (i <= mid && j <= right)
     {
@@ -37,25 +36,25 @@ static void merge(int *array, int left, int mid, int right, int size, double int
         array[i] = temp[k];
         VISUALIZE(array, size, intervalInSeconds);
     }
-
-    free(temp);
 }
 
-static void mergeSort_rec(int *array, int left, int right, int size, double intervalInSeconds)
+static void mergeSort_rec(int *array, int left, int right, int size, double intervalInSeconds, int *temp)
 {
     if (left < right)
     {
         int mid = left + (right - left) / 2;
 
         VISUALIZE(array, size, intervalInSeconds);
-        mergeSort_rec(array, left, mid, size, intervalInSeconds);
-        mergeSort_rec(array, mid + 1, right, size, intervalInSeconds);
+        mergeSort_rec(array, left, mid, size, intervalInSeconds, temp);
+        mergeSort_rec(array, mid + 1, right, size, intervalInSeconds, temp);
 
-        merge(array, left, mid, right, size, intervalInSeconds);
+        merge(array, left, mid, right, size, intervalInSeconds, temp);
     }
 }
 
 void mergeSort(int *array, int size, double intervalInSeconds)
 {
-    mergeSort_rec(array, 0, size - 1, size, intervalInSeconds);
+    int *temp = (int *)malloc(size * sizeof(int));
+    mergeSort_rec(array, 0, size - 1, size, intervalInSeconds, temp);
+    free(temp);
 }

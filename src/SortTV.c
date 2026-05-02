@@ -7,11 +7,11 @@
 #include<sys/ioctl.h>
 #include<getopt.h>
 #include "visualize.h"
-#include "bubbleSort.h"
-#include "selectionSort.h"
-#include "insertionSort.h"
-#include "mergeSort.h"
-#include "quickSort.h"
+#include "algorithms.h"
+
+#define ALGORITHM(fn, name) extern void fn(int *arr, int size, double intervalInSeconds);
+ALGORITHMS
+#undef ALGORITHM
 
 #define GNU_SOURCE
 #define DEFAULT_INTERVAL 0.01
@@ -194,13 +194,12 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    #define ALGORITHM(fn, name) {fn, name},
     SortingFunction sortingFunctions[] = {
-        {bubbleSort,    "Bubble"},
-        {selectionSort, "Selection"},
-        {insertionSort, "Insertion"},
-        {mergeSort,     "Merge"},
-        {quickSort,     "Quick"},
+        ALGORITHMS
     };
+
+    #undef ALGORITHM
     int numSortingFunctions = sizeof(sortingFunctions) / sizeof(sortingFunctions[0]);
 
     randomizeArray(arr, arraySize, maxValue);
