@@ -9,6 +9,8 @@ TODO:
 
 flags to add:
 - [ ] --sort=[sortingAlgorithm name]
-- [ ] --help/-h
+- [x] --help/-h
 - [ ] --benchmark
-- [ ] --term-width
+- [x] --width=N
+- [x] --height=N
+- [ ] --interval/-i
