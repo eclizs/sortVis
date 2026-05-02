@@ -23,16 +23,16 @@ void randomizeArray(int *array, int arraysize, int max)
     }
 }
 
-void visualizeAlgorithm(SortingFunction sf, int *array, int size, struct winsize w)
+void visualizeAlgorithm(SortingFunction sf, int *array, int size, int max, int intervalInSeconds)
 {
-    randomizeArray(array, size, w.ws_row - 2);
+    randomizeArray(array, size, max);
     system("clear");
     printf("%s Visualization...\nPress enter to start...", sf.name); getchar();
-    sf.function(array, size, 0);
+    sf.function(array, size, intervalInSeconds);
     printf("%s Visualization Completed.\nPress enter to continue...", sf.name); getchar();
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -52,7 +52,7 @@ int main()
     int numSortingFunctions = sizeof(sortingFunctions) / sizeof(sortingFunctions[0]);
     for (int i = 0; i < numSortingFunctions; i++)
     {
-        visualizeAlgorithm(sortingFunctions[i], arr, arraysize, w);
+        visualizeAlgorithm(sortingFunctions[i], arr, arraysize, w.ws_row - 2, 0.5);
     }
 
     return 0;
