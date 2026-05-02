@@ -2,10 +2,10 @@
 #define ALGORITHMS_H
 
 #define ALGORITHMS \
-    ALGORITHM(bubbleSort,    "bubble")    \
-    ALGORITHM(selectionSort, "selection") \
-    ALGORITHM(insertionSort, "insertion") \
-    ALGORITHM(mergeSort,     "merge")     \
-    ALGORITHM(quickSort,     "quick")
+    ALGORITHM(bubbleSort,    "Bubble")    \
+    ALGORITHM(selectionSort, "Selection") \
+    ALGORITHM(insertionSort, "Insertion") \
+    ALGORITHM(mergeSort,     "Merge")     \
+    ALGORITHM(quickSort,     "Quick")
 
 #endif // ALGORITHMS_H
