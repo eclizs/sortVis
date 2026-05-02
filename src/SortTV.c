@@ -179,7 +179,11 @@ int main(int argc, char *argv[])
     int maxValue = height;
     srand((unsigned)time(NULL));
 
-    int arr[arraySize];
+    int *arr = malloc(arraySize * sizeof(int));
+    if(arr == NULL) {
+        fprintf(stderr, "Array size too big!\n");
+        exit(EXIT_FAILURE);
+    }
 
     SortingFunction sortingFunctions[] = {
         {bubbleSort,    "Bubble"},
