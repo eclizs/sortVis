@@ -43,6 +43,10 @@ void randomizeArray(int *array, int arraysize, int max)
 void visualizeAlgorithm(SortingFunction sf, int *array, int size, double intervalInSeconds)
 {
     int *tempArray = malloc(size * sizeof(int));
+    if(tempArray == NULL) {
+        fprintf(stderr, "Array size too big!\n");
+        exit(EXIT_FAILURE);
+    }
     memcpy(tempArray, array, size * sizeof(int));
     system("clear");
     VISUALIZE(tempArray, size, 0.001);
@@ -52,10 +56,14 @@ void visualizeAlgorithm(SortingFunction sf, int *array, int size, double interva
     free(tempArray);
 }
 
-void benchmarkalgorithm(SortingFunction sf, int *array, int size)
+void benchmarkAlgorithm(SortingFunction sf, int *array, int size)
 {
     struct timespec start, end;
     int *tempArray = malloc(size * sizeof(int));
+    if(tempArray == NULL) {
+        fprintf(stderr, "Array size too big!\n");
+        exit(EXIT_FAILURE);
+    }
     memcpy(tempArray, array, size * sizeof(int));
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
@@ -73,8 +81,8 @@ void printHelp(char *programName)
     printf("Options:\n");
     printf("  -s, --sort [SORT_NAME]   Specify sorting algorithm (bubble, selection, insertion, merge, quick)\n");
     printf("  -b, --benchmark=[VALUE]  Run in benchmark mode (no visualization; [VALUE] is the array size; default is 10000)\n");
-    printf("  -w, --width=[WIDTH]      Set visualization width (default: terminal width)\n");
-    printf("  -e, --height=[HEIGHT]    Set visualization height (default: terminal height)\n");
+    printf("  -w, --width=[WIDTH]      Set visualization width (default and maximum: terminal width)\n");
+    printf("  -e, --height=[HEIGHT]    Set visualization height (default and maximum: terminal height)\n");
     printf("  -i, --interval=[SECONDS] Set interval between steps in seconds (default is 0.01; gets ignored if in benchmark mode)\n");
     printf("  -h, --help               Display this help message\n");
 }
@@ -150,12 +158,15 @@ int main(int argc, char *argv[])
 
     if(sortName != NULL) sortName[0] = toupper(sortName[0]); // Capitalize first letter for display
 
-    if((width < 0 || height < 0) && !benchmark) // Only get terminal size if not in benchmark mode
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+    if((width < 0 || width > w.ws_col - 2 ||
+        height < 0 || height > w.ws_row - STATUS_LINES)
+        && !benchmark) // Only get terminal size if not in benchmark mode
     {
-        struct winsize w;
-        ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-        if(width < 0) width = w.ws_col / 2 - 1;
-        if(height < 0) height = w.ws_row - STATUS_LINES;
+        if(width < 0 || width > w.ws_col / 2 ) width = w.ws_col / 2;
+        if(height < 0 || height > w.ws_row - STATUS_LINES) height = w.ws_row - STATUS_LINES;
     }
 
     if(benchmark)
@@ -164,11 +175,11 @@ int main(int argc, char *argv[])
         height = benchmarkSize;
     }
 
-    int arraysize = width;
+    int arraySize = width;
     int maxValue = height;
     srand((unsigned)time(NULL));
 
-    int arr[arraysize];
+    int arr[arraySize];
 
     SortingFunction sortingFunctions[] = {
         {bubbleSort,    "Bubble"},
@@ -179,15 +190,38 @@ int main(int argc, char *argv[])
     };
     int numSortingFunctions = sizeof(sortingFunctions) / sizeof(sortingFunctions[0]);
 
-    randomizeArray(arr, arraysize, maxValue);
+    randomizeArray(arr, arraySize, maxValue);
+
+    if(benchmark)
+    {
+        if(arraySize <= w.ws_col / 2)
+        {
+            VISUALIZE(arr, arraySize, 0.001);
+            printf("Initial Array...\nPress enter to start..."); getchar();
+        }
+        
+        printf("Benchmarking all sorting algorithms for an array of size %d:\n", arraySize);
+        for (int i = 0; i < numSortingFunctions; i++)
+        {
+            benchmarkAlgorithm(sortingFunctions[i], arr, arraySize);
+        }
+        return 0;
+    }
+
     if(sortName != NULL)
     {
         for (int i = 0; i < numSortingFunctions; i++)
         {
             if (strcmp(sortName, sortingFunctions[i].name) == 0)
             {
-                if(benchmark) benchmarkalgorithm(sortingFunctions[i], arr, arraysize);
-                else visualizeAlgorithm(sortingFunctions[i], arr, arraysize, intervalInSeconds);
+                if(arraySize <= w.ws_col / 2)
+                {
+                    VISUALIZE(arr, arraySize, 0.001);
+                    printf("Initial Array...\nPress enter to start..."); getchar();
+                }
+
+                if(benchmark) benchmarkAlgorithm(sortingFunctions[i], arr, arraySize);
+                else visualizeAlgorithm(sortingFunctions[i], arr, arraySize, intervalInSeconds);
                 return 0;
             }
         }
@@ -195,19 +229,10 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    if(benchmark)
-    {
-        printf("Benchmarking all sorting algorithms for an array of size %d:\n", arraysize);
-        for (int i = 0; i < numSortingFunctions; i++)
-        {
-            benchmarkalgorithm(sortingFunctions[i], arr, arraysize);
-        }
-        return 0;
-    }
     
     for (int i = 0; i < numSortingFunctions; i++)
     {
-        visualizeAlgorithm(sortingFunctions[i], arr, arraysize, intervalInSeconds);
+        visualizeAlgorithm(sortingFunctions[i], arr, arraySize, intervalInSeconds);
     }
 
     return 0;

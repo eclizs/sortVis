@@ -20,7 +20,7 @@ void visualizeArray(int *array, int size)
     
     char *buf = malloc(bufsize);
     if (buf == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
+        fprintf(stderr, "Array size too big!\n");
         return;
     }
     char *ptr = buf;
