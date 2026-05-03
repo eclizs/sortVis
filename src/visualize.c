@@ -1,6 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<unistd.h>
+#include "platform.h"
 #include "visualize.h"
 
 int findMax(int *array, int size)

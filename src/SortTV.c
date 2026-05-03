@@ -1,11 +1,13 @@
+#define GNU_SOURCE
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
 #include<ctype.h>
-#include<unistd.h>
 #include<time.h>
 #include<sys/ioctl.h>
 #include<getopt.h>
+#include "platform.h"
 #include "visualize.h"
 #include "algorithms.h"
 
@@ -13,7 +15,7 @@
 ALGORITHMS
 #undef ALGORITHM
 
-#define GNU_SOURCE
+
 #define DEFAULT_INTERVAL 0.01
 #define STATUS_LINES 5
 
@@ -48,7 +50,7 @@ void visualizeAlgorithm(SortingFunction sf, int *array, int size, double interva
         exit(EXIT_FAILURE);
     }
     memcpy(tempArray, array, size * sizeof(int));
-    system("clear");
+    CLEAR_SCREEN();
     VISUALIZE(tempArray, size, 0.001);
     printf("%s Sort Visualization...\nPress enter to start...", sf.name); getchar();
     sf.function(tempArray, size, intervalInSeconds);
@@ -154,7 +156,7 @@ int main(int argc, char *argv[])
     double intervalInSeconds = DEFAULT_INTERVAL; // Default interval
     
     parseArguments(argc, argv, &sortName, &benchmark, &benchmarkSize, &width, &height, &intervalInSeconds);
-    system("clear");
+    CLEAR_SCREEN();
 
     if(sortName != NULL) sortName[0] = toupper(sortName[0]); // Capitalize first letter for display
 

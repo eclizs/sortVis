@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include "platform.h"
 #include "quickSort.h"
 #include "swap.h"
 #include "visualize.h"
