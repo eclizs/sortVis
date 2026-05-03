@@ -3,6 +3,7 @@
 
 #ifdef _WIN32
 
+#include<stdio.h>
 #include<windows.h>
 #include<io.h>
 #define CLEAR_SCREEN() system("cls")
