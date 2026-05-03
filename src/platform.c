@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #ifdef _WIN32
+#include<stdio.h>
 #include<io.h>
 #else
 #include <sys/ioctl.h>
@@ -30,5 +31,4 @@ WindowSize getConsoleInfo()
     }
     else return (WindowSize){80, 24}; // Default size for non-terminal output
     #endif
-    
 }
