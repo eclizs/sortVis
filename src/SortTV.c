@@ -1,11 +1,10 @@
-#define GNU_SOURCE
+#define _GNU_SOURCE
 
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
 #include<ctype.h>
 #include<time.h>
-#include<sys/ioctl.h>
 #include<getopt.h>
 #include "platform.h"
 #include "visualize.h"
@@ -60,7 +59,6 @@ void visualizeAlgorithm(SortingFunction sf, int *array, int size, double interva
 
 void benchmarkAlgorithm(SortingFunction sf, int *array, int size)
 {
-    struct timespec start, end;
     int *tempArray = malloc(size * sizeof(int));
     if(tempArray == NULL) {
         fprintf(stderr, "Array size too big!\n");
@@ -68,10 +66,7 @@ void benchmarkAlgorithm(SortingFunction sf, int *array, int size)
     }
     memcpy(tempArray, array, size * sizeof(int));
 
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-    sf.function(tempArray, size, 0); // No visualization for benchmark
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
-    double timeTaken = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    double timeTaken = measureElapsedTime(sf.function, tempArray, size);
     printf("%s Sort Benchmark: %.6f seconds\n", sf.name, timeTaken);
     free(tempArray);
 }
@@ -205,22 +200,6 @@ int main(int argc, char *argv[])
 
     randomizeArray(arr, arraySize, maxValue);
 
-    if(benchmark)
-    {
-        if(arraySize <= w.ws_col / 2)
-        {
-            VISUALIZE(arr, arraySize, 0.001);
-            printf("Initial Array...\nPress enter to start..."); getchar();
-        }
-        
-        printf("Benchmarking all sorting algorithms for an array of size %d:\n", arraySize);
-        for (int i = 0; i < numSortingFunctions; i++)
-        {
-            benchmarkAlgorithm(sortingFunctions[i], arr, arraySize);
-        }
-        return 0;
-    }
-
     if(sortName != NULL)
     {
         for (int i = 0; i < numSortingFunctions; i++)
@@ -241,6 +220,23 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Unknown sorting algorithm: %s\n", sortName);
         exit(EXIT_FAILURE);
     }
+    
+    if(benchmark)
+    {
+        if(arraySize <= w.ws_col / 2)
+        {
+            VISUALIZE(arr, arraySize, 0.001);
+            printf("Initial Array...\nPress enter to start..."); getchar();
+        }
+        
+        printf("Benchmarking all sorting algorithms for an array of size %d:\n", arraySize);
+        for (int i = 0; i < numSortingFunctions; i++)
+        {
+            benchmarkAlgorithm(sortingFunctions[i], arr, arraySize);
+        }
+        return 0;
+    }
+
 
     
     for (int i = 0; i < numSortingFunctions; i++)

@@ -5,9 +5,9 @@
     do { \
         if(intervalInSeconds > 0)\
         { \
-            write(STDOUT_FILENO, "\033[H", 3); /* Move cursor to the top-left corner */ \
+            WRITE(STDOUT_FILENO, "\033[H", 3); /* Move cursor to the top-left corner */ \
             visualizeArray(arr, size); \
-            usleep(intervalInSeconds * 1000000); \
+            SLEEP_S(intervalInSeconds); \
         } \
     } while(0)
 

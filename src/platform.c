@@ -1,9 +1,4 @@
 #define _GNU_SOURCE
-#ifdef _WIN32
-#include<io.h>
-#else
-#include <sys/ioctl.h>
-#endif
 #include "platform.h"
 
 WindowSize getConsoleInfo()
@@ -30,5 +25,31 @@ WindowSize getConsoleInfo()
     }
     else return (WindowSize){80, 24}; // Default size for non-terminal output
     #endif
-    
+}
+
+double measureElapsedTime(void (*sortingFunction)(int *, int, double), int *array, int size)
+{
+    #ifdef _WIN32
+        struct _FILETIME begin, creation_time, exit_time, kernel_time, end;
+        GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &begin);
+        sortingFunction(array, size, 0); // No visualization for benchmark
+        GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &end);
+        ULARGE_INTEGER start;
+        start.LowPart = begin.dwLowDateTime;
+        start.HighPart = begin.dwHighDateTime;
+
+        ULARGE_INTEGER finish;
+        finish.LowPart = end.dwLowDateTime; 
+        finish.HighPart = end.dwHighDateTime;
+
+        double elapsed_time = (finish.QuadPart - start.QuadPart) * 1e-7; // Convert to seconds
+        return elapsed_time;
+    #else
+        struct timespec start, end;
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+        sortingFunction(array, size, 0); // No visualization for benchmark
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
+        double elapsed_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        return elapsed_time;
+    #endif
 }
