@@ -11,6 +11,7 @@
 
 #else
 #include<unistd.h>
+#include<sys/ioctl.h>
 #define CLEAR_SCREEN() system("clear")
 #define WRITE(fd, buf, count) write(fd, buf, count)
 #define SLEEP_S(seconds) usleep((seconds) * 1000000)
